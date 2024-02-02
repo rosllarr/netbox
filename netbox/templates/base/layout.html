@@ -79,6 +79,7 @@ Blocks:
 
     {# Page content #}
     <div class="page-wrapper">
+      <div id="page-content" hx-boost="true" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML">
 
       {# Page header #}
       {% block header %}
@@ -121,6 +122,8 @@ Blocks:
         {% include 'inc/banner.html' with content=config.BANNER_BOTTOM %}
       {% endif %}
       {# /Bottom banner #}
+
+      </div>
 
       {# Page footer #}
       <footer class="footer footer-transparent d-print-none py-2">

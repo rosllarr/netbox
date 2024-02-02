@@ -1,6 +1,6 @@
 {% load helpers %}
 
-<ul class="navbar-nav pt-lg-2">
+<ul class="navbar-nav pt-lg-2" hx-boost="true" hx-target="#page-content" hx-select="#page-content" hx-swap="innerHTML">
   {% for menu, groups in nav_items %}
     <li class="nav-item dropdown">
 

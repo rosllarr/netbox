@@ -18,6 +18,7 @@ from extras.dashboard.utils import get_widget_class
 from netbox.constants import DEFAULT_ACTION_PERMISSIONS
 from netbox.views import generic
 from utilities.forms import ConfirmationForm, get_field_value
+from utilities.htmx import render_partial
 from utilities.paginator import EnhancedPaginator, get_paginate_count
 from utilities.rqworker import get_workers_for_queue
 from utilities.templatetags.builtins.filters import render_markdown
@@ -1168,7 +1169,7 @@ class ScriptResultView(ContentTypePermissionRequiredMixin, View):
             }
 
         # If this is an HTMX request, return only the result HTML
-        if request.htmx:
+        if render_partial(request):
             response = render(request, 'extras/htmx/script_result.html', context)
             if job.completed or not job.started:
                 response.status_code = 286
