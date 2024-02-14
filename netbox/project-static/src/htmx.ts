@@ -1,4 +1,3 @@
-import { getElements, isTruthy } from './util';
 import { initButtons } from './buttons';
 import { initSelects } from './select';
 import { initObjectSelector } from './objectSelector';
@@ -15,16 +14,5 @@ function initDepedencies(): void {
  * elements.
  */
 export function initHtmx(): void {
-  for (const element of getElements('[hx-target]')) {
-    const targetSelector = element.getAttribute('hx-target');
-    if (isTruthy(targetSelector)) {
-      for (const target of getElements(targetSelector)) {
-        target.addEventListener('htmx:afterSettle', initDepedencies);
-      }
-    }
-  }
-
-  for (const element of getElements('[hx-trigger=load]')) {
-    element.addEventListener('htmx:afterSettle', initDepedencies);
-  }
+  document.addEventListener('htmx:afterSettle', initDepedencies);
 }
