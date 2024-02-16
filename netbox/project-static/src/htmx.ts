@@ -1,10 +1,11 @@
 import { initButtons } from './buttons';
+import { initClipboard } from './clipboard'
 import { initSelects } from './select';
 import { initObjectSelector } from './objectSelector';
 import { initBootstrap } from './bs';
 
 function initDepedencies(): void {
-  for (const init of [initButtons, initSelects, initObjectSelector, initBootstrap]) {
+  for (const init of [initButtons, initClipboard, initSelects, initObjectSelector, initBootstrap]) {
     init();
   }
 }
