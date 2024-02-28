@@ -137,9 +137,13 @@ class ScriptModule(PythonModuleMixin, JobsMixin, ManagedFile):
         Syncs the file-based module to the database, adding and removing individual Script objects
         in the database as needed.
         """
-        db_classes = {
-            script.name: script for script in self.scripts.all()
-        }
+        if self.id:
+            db_classes = {
+                script.name: script for script in self.scripts.all()
+            }
+        else:
+            db_classes = {}
+
         db_classes_set = set(db_classes.keys())
         module_classes_set = set(self.module_scripts.keys())
 
@@ -158,11 +162,11 @@ class ScriptModule(PythonModuleMixin, JobsMixin, ManagedFile):
 
     def sync_data(self):
         super().sync_data()
-        self.sync_classes()
 
     def save(self, *args, **kwargs):
         self.file_root = ManagedFileRootPathChoices.SCRIPTS
         return super().save(*args, **kwargs)
+        self.sync_classes()
 
 
 @receiver(post_save, sender=ScriptModule)
