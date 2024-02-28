@@ -108,7 +108,7 @@ class ScriptModule(PythonModuleMixin, JobsMixin, ManagedFile):
     def __str__(self):
         return self.python_name
 
-    @cached_property
+    @property
     def module_scripts(self):
 
         def _get_name(cls):
