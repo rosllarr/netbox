@@ -3,6 +3,7 @@ from copy import deepcopy
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext as _
 from django_pglocks import advisory_lock
 from drf_spectacular.utils import extend_schema
 from netaddr import IPSet
@@ -12,8 +13,6 @@ from rest_framework.response import Response
 from rest_framework.routers import APIRootView
 from rest_framework.views import APIView
 
-from circuits.models import Provider
-from dcim.models import Site
 from ipam import filtersets
 from ipam.models import *
 from ipam.utils import get_next_available_prefix
@@ -22,7 +21,6 @@ from netbox.api.viewsets.mixins import ObjectValidationMixin
 from netbox.config import get_config
 from netbox.constants import ADVISORY_LOCK_KEYS
 from utilities.api import get_serializer_for_model
-from utilities.utils import count_related
 from . import serializers
 
 
@@ -45,19 +43,13 @@ class ASNRangeViewSet(NetBoxModelViewSet):
 
 
 class ASNViewSet(NetBoxModelViewSet):
-    queryset = ASN.objects.annotate(
-        site_count=count_related(Site, 'asns'),
-        provider_count=count_related(Provider, 'asns')
-    )
+    queryset = ASN.objects.all()
     serializer_class = serializers.ASNSerializer
     filterset_class = filtersets.ASNFilterSet
 
 
 class VRFViewSet(NetBoxModelViewSet):
-    queryset = VRF.objects.annotate(
-        ipaddress_count=count_related(IPAddress, 'vrf'),
-        prefix_count=count_related(Prefix, 'vrf')
-    )
+    queryset = VRF.objects.all()
     serializer_class = serializers.VRFSerializer
     filterset_class = filtersets.VRFFilterSet
 
@@ -69,9 +61,7 @@ class RouteTargetViewSet(NetBoxModelViewSet):
 
 
 class RIRViewSet(NetBoxModelViewSet):
-    queryset = RIR.objects.annotate(
-        aggregate_count=count_related(Aggregate, 'rir')
-    )
+    queryset = RIR.objects.all()
     serializer_class = serializers.RIRSerializer
     filterset_class = filtersets.RIRFilterSet
 
@@ -83,10 +73,7 @@ class AggregateViewSet(NetBoxModelViewSet):
 
 
 class RoleViewSet(NetBoxModelViewSet):
-    queryset = Role.objects.annotate(
-        prefix_count=count_related(Prefix, 'role'),
-        vlan_count=count_related(VLAN, 'role')
-    )
+    queryset = Role.objects.all()
     serializer_class = serializers.RoleSerializer
     filterset_class = filtersets.RoleFilterSet
 
@@ -151,8 +138,6 @@ class VLANGroupViewSet(NetBoxModelViewSet):
 class VLANViewSet(NetBoxModelViewSet):
     queryset = VLAN.objects.prefetch_related(
         'l2vpn_terminations',  # Referenced by VLANSerializer.l2vpn_termination
-    ).annotate(
-        prefix_count=count_related(Prefix, 'vlan')
     )
     serializer_class = serializers.VLANSerializer
     filterset_class = filtersets.VLANFilterSet
@@ -370,7 +355,7 @@ class AvailablePrefixesView(AvailableObjectsView):
                     'vrf': parent.vrf.pk if parent.vrf else None,
                 })
             else:
-                raise ValidationError("Insufficient space is available to accommodate the requested prefix size(s)")
+                raise ValidationError(_("Insufficient space is available to accommodate the requested prefix size(s)"))
 
         return requested_objects
 
