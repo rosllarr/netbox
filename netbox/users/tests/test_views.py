@@ -1,6 +1,4 @@
-from django.contrib.auth.models import Group
-from django.contrib.contenttypes.models import ContentType
-
+from core.models import ObjectType
 from users.models import *
 from utilities.testing import ViewTestCases, create_test_user
 
@@ -70,7 +68,7 @@ class GroupTestCase(
     ViewTestCases.BulkImportObjectsViewTestCase,
     ViewTestCases.BulkDeleteObjectsViewTestCase,
 ):
-    model = NetBoxGroup
+    model = Group
     maxDiff = None
 
     @classmethod
@@ -116,7 +114,7 @@ class ObjectPermissionTestCase(
 
     @classmethod
     def setUpTestData(cls):
-        ct = ContentType.objects.get_by_natural_key('dcim', 'site')
+        object_type = ObjectType.objects.get_by_natural_key('dcim', 'site')
 
         permissions = (
             ObjectPermission(name='Permission 1', actions=['view', 'add', 'delete']),
@@ -128,7 +126,7 @@ class ObjectPermissionTestCase(
         cls.form_data = {
             'name': 'Permission X',
             'description': 'A new permission',
-            'object_types': [ct.pk],
+            'object_types': [object_type.pk],
             'actions': 'view,edit,delete',
         }
 

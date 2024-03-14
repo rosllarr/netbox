@@ -1,13 +1,12 @@
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import FieldError
 from django.utils.html import mark_safe
 from django.utils.translation import gettext_lazy as _
 
+from core.models import ObjectType
 from ipam.formfields import IPNetworkFormField
 from ipam.validators import prefix_validator
 from netbox.preferences import PREFERENCES
@@ -253,7 +252,7 @@ class GroupForm(forms.ModelForm):
     )
 
     class Meta:
-        model = NetBoxGroup
+        model = Group
         fields = [
             'name', 'users', 'object_permissions',
         ]
@@ -263,14 +262,14 @@ class GroupForm(forms.ModelForm):
 
         # Populate assigned users and permissions
         if self.instance.pk:
-            self.fields['users'].initial = self.instance.user_set.values_list('id', flat=True)
+            self.fields['users'].initial = self.instance.users.values_list('id', flat=True)
             self.fields['object_permissions'].initial = self.instance.object_permissions.values_list('id', flat=True)
 
     def save(self, *args, **kwargs):
         instance = super().save(*args, **kwargs)
 
         # Update assigned users and permissions
-        instance.user_set.set(self.cleaned_data['users'])
+        instance.users.set(self.cleaned_data['users'])
         instance.object_permissions.set(self.cleaned_data['object_permissions'])
 
         return instance
@@ -279,7 +278,7 @@ class GroupForm(forms.ModelForm):
 class ObjectPermissionForm(forms.ModelForm):
     object_types = ContentTypeMultipleChoiceField(
         label=_('Object types'),
-        queryset=ContentType.objects.all(),
+        queryset=ObjectType.objects.all(),
         limit_choices_to=OBJECTPERMISSION_OBJECT_TYPES,
         widget=forms.SelectMultiple(attrs={'size': 6})
     )
