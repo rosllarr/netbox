@@ -1,7 +1,9 @@
-from drf_spectacular.utils import extend_schema_serializer
+from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
+
 from rest_framework import serializers
 
 from ipam import models
+from netbox.api.fields import SerializedPKRelatedField
 from netbox.api.serializers import WritableNestedSerializer
 from .field_serializers import IPAddressField
 
@@ -47,6 +49,16 @@ class NestedASNSerializer(WritableNestedSerializer):
     class Meta:
         model = models.ASN
         fields = ['id', 'url', 'display', 'asn']
+
+
+@extend_schema_field(NestedASNSerializer)
+class ASNRelatedFieldSerializer(SerializedPKRelatedField):
+    def __init__(self, **kwargs):
+        super().__init__(
+            queryset=models.ASN.objects.all(),
+            serializer=NestedASNSerializer,
+            **kwargs
+        )
 
 
 #

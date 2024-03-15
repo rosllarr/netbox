@@ -15,6 +15,7 @@ from ipam.api.nested_serializers import (
     NestedASNSerializer, NestedIPAddressSerializer, NestedVLANSerializer, NestedVRFSerializer,
 )
 from ipam.models import ASN, VLAN
+from ipam.api.nested_serializers import ASNRelatedFieldSerializer
 from netbox.api.fields import ChoiceField, ContentTypeField, SerializedPKRelatedField
 from netbox.api.serializers import (
     GenericObjectSerializer, NestedGroupModelSerializer, NetBoxModelSerializer, ValidatedModelSerializer,
@@ -129,6 +130,16 @@ class SiteGroupSerializer(NestedGroupModelSerializer):
         ]
 
 
+@extend_schema_field(NestedASNSerializer)
+class SerializedASNRelatedField(SerializedPKRelatedField):
+    def __init__(self, **kwargs):
+        super().__init__(
+            queryset=ASN.objects.all(),
+            serializer=NestedASNSerializer,
+            **kwargs
+        )
+
+
 class SiteSerializer(NetBoxModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='dcim-api:site-detail')
     status = ChoiceField(choices=SiteStatusChoices, required=False)
@@ -136,9 +147,7 @@ class SiteSerializer(NetBoxModelSerializer):
     group = NestedSiteGroupSerializer(required=False, allow_null=True)
     tenant = NestedTenantSerializer(required=False, allow_null=True)
     time_zone = TimeZoneSerializerField(required=False, allow_null=True)
-    asns = SerializedPKRelatedField(
-        queryset=ASN.objects.all(),
-        serializer=NestedASNSerializer,
+    asns = ASNRelatedFieldSerializer(
         required=False,
         many=True
     )
