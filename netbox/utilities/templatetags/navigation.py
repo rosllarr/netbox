@@ -40,6 +40,6 @@ def nav(context: Context) -> Dict:
             nav_items.append((menu, groups))
 
     return {
-        "nav_items": nav_items,
-        "request": context["request"]
+        'nav_items': nav_items,
+        'htmx_navigation': context['htmx_navigation']
     }
