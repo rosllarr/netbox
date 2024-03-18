@@ -58,6 +58,7 @@ class UserConfigForm(forms.ModelForm, metaclass=UserConfigFormMetaclass):
             'pagination.per_page',
             'pagination.placement',
             'ui.colormode',
+            'ui.htmx_navigation',
         )),
         (_('Miscellaneous'), (
             'data_format',

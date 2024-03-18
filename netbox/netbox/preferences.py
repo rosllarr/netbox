@@ -23,6 +23,14 @@ PREFERENCES = {
         ),
         default='light',
     ),
+    'ui.htmx_navigation': UserPreference(
+        label=_('HTMX Navigation'),
+        choices=(
+            ('true', _('Enabled')),
+            ('false', _('Disabled')),
+        ),
+        default=False
+    ),
     'locale.language': UserPreference(
         label=_('Language'),
         choices=(
