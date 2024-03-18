@@ -79,7 +79,7 @@ Blocks:
 
     {# Page content #}
     <div class="page-wrapper">
-      <div id="page-content" hx-boost="true" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML show:window:top">
+      <div id="page-content"{% if htmx_navigation %} hx-boost="true" hx-target="#page-content" hx-select="#page-content" hx-swap="outerHTML show:window:top"{% endif %}>
 
       {# Page header #}
       {% block header %}
