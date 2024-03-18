@@ -6,8 +6,6 @@ from netbox.api.fields import RelatedObjectCountField
 from netbox.api.serializers import WritableNestedSerializer
 
 __all__ = [
-    'ComponentNestedModuleSerializer',
-    'ModuleBayNestedModuleSerializer',
     'NestedCableSerializer',
     'NestedConsolePortSerializer',
     'NestedConsolePortTemplateSerializer',
@@ -319,18 +317,6 @@ class ModuleBayNestedModuleSerializer(WritableNestedSerializer):
         fields = ['id', 'url', 'display', 'serial']
 
 
-class ComponentNestedModuleSerializer(WritableNestedSerializer):
-    """
-    Used by device component serializers.
-    """
-    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:module-detail')
-    module_bay = ModuleNestedModuleBaySerializer(read_only=True)
-
-    class Meta:
-        model = models.Module
-        fields = ['id', 'url', 'display', 'device', 'module_bay']
-
-
 class NestedModuleSerializer(WritableNestedSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='dcim-api:module-detail')
     device = NestedDeviceSerializer(read_only=True)
@@ -414,11 +400,11 @@ class NestedFrontPortSerializer(WritableNestedSerializer):
 
 class NestedModuleBaySerializer(WritableNestedSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='dcim-api:modulebay-detail')
-    module = NestedModuleSerializer(required=False, read_only=True, allow_null=True)
+    installed_module = ModuleBayNestedModuleSerializer(required=False, allow_null=True)
 
     class Meta:
         model = models.ModuleBay
-        fields = ['id', 'url', 'display', 'module', 'name']
+        fields = ['id', 'url', 'display', 'installed_module', 'name']
 
 
 class NestedDeviceBaySerializer(WritableNestedSerializer):

@@ -3,7 +3,6 @@ from copy import deepcopy
 import django_tables2 as tables
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldDoesNotExist
 from django.db.models.fields.related import RelatedField
 from django.urls import reverse
@@ -12,6 +11,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django_tables2.data import TableQuerysetData
 
+from core.models import ObjectType
 from extras.choices import *
 from extras.models import CustomField, CustomLink
 from netbox.registry import registry
@@ -201,14 +201,14 @@ class NetBoxTable(BaseTable):
             ])
 
         # Add custom field & custom link columns
-        content_type = ContentType.objects.get_for_model(self._meta.model)
+        object_type = ObjectType.objects.get_for_model(self._meta.model)
         custom_fields = CustomField.objects.filter(
-            content_types=content_type
+            object_types=object_type
         ).exclude(ui_visible=CustomFieldUIVisibleChoices.HIDDEN)
         extra_columns.extend([
             (f'cf_{cf.name}', columns.CustomFieldColumn(cf)) for cf in custom_fields
         ])
-        custom_links = CustomLink.objects.filter(content_types=content_type, enabled=True)
+        custom_links = CustomLink.objects.filter(object_types=object_type, enabled=True)
         extra_columns.extend([
             (f'cl_{cl.name}', columns.CustomLinkColumn(cl)) for cl in custom_links
         ])
@@ -263,9 +263,11 @@ class SearchTable(tables.Table):
         super().__init__(data, **kwargs)
 
     def render_field(self, value, record):
-        if hasattr(record.object, value):
-            return title(record.object._meta.get_field(value).verbose_name)
-        return value
+        try:
+            model_field = record.object._meta.get_field(value)
+            return title(model_field.verbose_name)
+        except FieldDoesNotExist:
+            return value
 
     def render_value(self, value):
         if not self.highlight:

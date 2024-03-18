@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 
-from core.models import ContentType
+from core.models import ObjectType
 from ipam.choices import *
 from ipam.constants import *
 from ipam.fields import IPNetworkField, IPAddressField
@@ -844,6 +844,25 @@ class IPAddress(PrimaryModel):
                     'address': _("Cannot create IP address with /0 mask.")
                 })
 
+            # Do not allow assigning a network ID or broadcast address to an interface.
+            if self.assigned_object:
+                if self.address.ip == self.address.network:
+                    msg = _("{ip} is a network ID, which may not be assigned to an interface.").format(
+                        ip=self.address.ip
+                    )
+                    if self.address.version == 4 and self.address.prefixlen not in (31, 32):
+                        raise ValidationError(msg)
+                    if self.address.version == 6 and self.address.prefixlen not in (127, 128):
+                        raise ValidationError(msg)
+                if (
+                        self.address.version == 4 and self.address.ip == self.address.broadcast and
+                        self.address.prefixlen not in (31, 32)
+                ):
+                    msg = _("{ip} is a broadcast address, which may not be assigned to an interface.").format(
+                        ip=self.address.ip
+                    )
+                    raise ValidationError(msg)
+
             # Enforce unique IP space (if applicable)
             if (self.vrf is None and get_config().ENFORCE_GLOBAL_UNIQUE) or (self.vrf and self.vrf.enforce_unique):
                 duplicate_ips = self.get_duplicates()
@@ -861,7 +880,7 @@ class IPAddress(PrimaryModel):
 
         if self._original_assigned_object_id and self._original_assigned_object_type_id:
             parent = getattr(self.assigned_object, 'parent_object', None)
-            ct = ContentType.objects.get_for_id(self._original_assigned_object_type_id)
+            ct = ObjectType.objects.get_for_id(self._original_assigned_object_type_id)
             original_assigned_object = ct.get_object_for_this_type(pk=self._original_assigned_object_id)
             original_parent = getattr(original_assigned_object, 'parent_object', None)
 
