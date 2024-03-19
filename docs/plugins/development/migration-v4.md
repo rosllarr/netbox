@@ -4,9 +4,9 @@ This document serves as a handbook for maintainers of plugins that were written 
 
 ## General
 
-### Python 3.10+ required
+### Python support
 
-NetBox v4.0 drops support for Python 3.8 and 3.9. You may need to update your CI/CD processes to reflect this.
+NetBox v4.0 drops support for Python 3.8 and 3.9, and introduces support for Python 3.12. You may need to update your CI/CD processes and/or packaging to reflect this.
 
 ### Plugin resources relocated
 
