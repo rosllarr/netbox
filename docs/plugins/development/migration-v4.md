@@ -220,3 +220,97 @@ class SiteSerializer(NetBoxModelSerializer):
 ### Include description fields in brief mode
 
 NetBox now includes the `description` the field in "brief" mode for all models which have one. This is not required for plugins, but you may opt to do the same for consistency.
+
+## GraphQL
+
+NetBox has replaced [Graphene-Django](https://github.com/graphql-python/graphene-django) with [Strawberry](https://strawberry.rocks/) which requires any GraphQL code to be updated.
+
+### Change schema.py
+
+Strawberry uses [python typing](https://docs.python.org/3/library/typing.html) and generally only requires a small refactoring of the schema definition to update:
+
+```python title="Old"
+import graphene
+from netbox.graphql.fields import ObjectField, ObjectListField
+from utilities.graphql_optimizer import gql_query_optimizer
+
+class CircuitsQuery(graphene.ObjectType):
+    circuit = ObjectField(CircuitType)
+    circuit_list = ObjectListField(CircuitType)
+
+    def resolve_circuit_list(root, info, **kwargs):
+        return gql_query_optimizer(models.Circuit.objects.all(), info)
+```
+
+```python title="New"
+from typing import List
+
+import strawberry
+import strawberry_django
+
+@strawberry.type
+class CircuitsQuery:
+    @strawberry.field
+    def circuit(self, id: int) -> CircuitType:
+        return models.Circuit.objects.get(pk=id)
+    circuit_list: List[CircuitType] = strawberry_django.field()
+```
+
+### Change types.py
+
+Type conversion is also fairly straight-forward, but Strawberry requires FK and M2M references to be explicitly defined to pick up the right typing.
+
+1. The `class Meta` options need to be moved up to the Strawberry decorator
+2. Add `@strawberry_django.field` definitions for any FK and M2M references in the model
+
+```python title="Old"
+import graphene
+
+class CircuitType(NetBoxObjectType, ContactsMixin):
+    class Meta:
+        model = models.Circuit
+        fields = '__all__'
+        filterset_class = filtersets.CircuitFilterSet
+```
+
+```python title="New"
+from typing import Annotated, List
+
+import strawberry
+import strawberry_django
+
+@strawberry_django.type(
+    models.CircuitType,
+    fields='__all__',
+    filters=CircuitTypeFilter
+)
+class CircuitTypeType(OrganizationalObjectType):
+    color: str
+
+    @strawberry_django.field
+    def circuits(self) -> List[Annotated["CircuitType", strawberry.lazy('circuits.graphql.types')]]:
+        return self.circuits.all()
+```
+
+### Change filters.py
+
+Strawberry currently doesn't directly support django-filter, so an explicit filters.py file will need to be created.  NetBox includes a new `autotype_decorator` used to automatically wrap FilterSets to reduce the required code to a minimum.
+
+```python title="New"
+import strawberry
+import strawberry_django
+from circuits import filtersets, models
+
+from netbox.graphql.filter_mixins import autotype_decorator, BaseFilterMixin
+
+__all__ = (
+    'CircuitFilter',
+)
+
+
+@strawberry_django.filter(models.Circuit, lookups=True)
+@autotype_decorator(filtersets.CircuitFilterSet)
+class CircuitFilter(BaseFilterMixin):
+    pass
+
+```
