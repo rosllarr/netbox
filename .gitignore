@@ -25,4 +25,4 @@ netbox.pid
 .DS_Store
 .idea
 .coverage
-.vscode
+# .vscode
