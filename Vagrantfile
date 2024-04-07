@@ -52,8 +52,7 @@ Vagrant.configure("2") do |config|
   # Enable provisioning with a shell script.
   config.vm.provision "shell", inline: <<-SHELL
 
-    echo -n "alias z='cd'" >> ~/.bashrc
-    echo -n "" >> ~/.bashrc
+    echo -n "alias z='cd'" >> /home/vagrant/.bashrc
 
     dnf update -y
     dnf install -y postgresql-server redis python3-pip python3.12 git
