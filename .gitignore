@@ -25,4 +25,5 @@ netbox.pid
 .DS_Store
 .idea
 .coverage
+.vagrant
 # .vscode
