@@ -51,7 +51,7 @@ class ChoiceSetMeta(type):
         return iter(getattr(cls, '_choices', ()))
 
 
-class ChoiceSet(metaclass=ChoiceSetMeta):
+class ChoiceSet():
     """
     Holds an iterable of choice tuples suitable for passing to a Django model or form field. Choices can be defined
     statically within the class as CHOICES and/or gleaned from the FIELD_CHOICES configuration parameter.
