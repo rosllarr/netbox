@@ -43,9 +43,9 @@ Vagrant.configure("2") do |config|
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant.
   config.vm.provider :libvirt do |libvirt|
-    libvirt.cpus = 1
+    libvirt.cpus = 2
     libvirt.cpuset = '1-4,^3,6'
-    libvirt.cputopology :sockets => '1', :cores => '1', :threads => '1'
+    libvirt.cputopology :sockets => '1', :cores => '2', :threads => '1'
     libvirt.memory = 2048
   end
 
